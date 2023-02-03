@@ -82,7 +82,7 @@ LiberSBC:  	designed for use with Asterisk, pre-configured templates, ease of us
 
 # SOP
 
-![Scenario](/home/hojat/Downloads/Timor.jpg)
+![Scenario](https://raw.githubusercontent.com/hojat-gazestani/VoIP/main/Asterisk_SBC_Cluster/pic/01-Scenario.jpg)
 
 
 
