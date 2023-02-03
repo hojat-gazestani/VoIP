@@ -448,3 +448,168 @@ peer=kamailio2
 3. Define the routing rules in the Kamailio SBCs to route incoming SIP traffic to the correct PBX system. This can be done using the "route" or "rewrite" directives in the Kamailio SBC's configuration files.
 4. Test the connection between the PBX systems and the SBCs to ensure that SIP traffic is being properly routed.
 
+## Ensure that both PBX systems can register with both SBCs and can make and receive calls.
+
+
+
+### Configure SIP Trunk on both PBX systems, point the SIP Trunk to the load balancer IP and port, and provide the authentication credentials for the SIP trunk.
+
+- Open the Asterisk CLI by typing "asterisk -r" on the terminal.
+
+1. Configure a SIP trunk by adding the following code in the sip.conf file:
+
+```scss
+[trunk-name]
+type=peer
+host=<load-balancer-ip>
+port=<load-balancer-port>
+username=<trunk-username>
+secret=<trunk-password>
+```
+
+1. Save the changes and reload the sip.conf file by running the following command on the CLI:
+
+```scss
+sip reload
+```
+
+1. Create an Outbound Route in the Asterisk PBX system to allow calls to be made over the SIP trunk. To do this, add the following code in the extensions.conf file:
+
+```scss
+[Outbound_Route]
+exten => _X.,1,Dial(SIP/<trunk-name>/${EXTEN})
+```
+
+1. Save the changes and reload the extensions.conf file by running the following command on the CLI:
+
+```scss
+dialplan reload
+```
+
+1. Verify the SIP trunk registration by using the following command on the CLI:
+
+```scss
+sip show peer <trunk-name>
+```
+
+1. Test the SIP trunk by making and receiving calls over the SIP trunk.
+
+Repeat these steps on the other Asterisk PBX system, and make sure to replace the load-balancer IP and port, trunk username, and trunk password with the correct values.
+
+### On both Kamailio SBCs, configure the SIP settings for registering the PBX systems and processing the incoming SIP traffic. This includes setting up the SIP listeners, authentication settings, and routing rules.
+
+hentication settings, and routing rules.
+
+
+
+
+
+The steps to configure SIP settings on Kamailio SBCs are:
+
+1. Define SIP listeners: In Kamailio configuration file, add a "listen" directive to specify the IP address and port to listen on for SIP traffic. Example:
+
+```scss
+listen=udp:x.x.x.x:5060
+```
+
+1. Add authentication settings: In Kamailio, you can use the "auth" module to authenticate incoming SIP requests. You can set the username and password for PBX systems to authenticate with Kamailio. Example:
+
+```scss
+auth_db_url=“pgsql://user:password@server/database”
+auth_enable=yes
+auth_realm=kamailio
+auth_passwd=file:/etc/kamailio/passwd
+```
+
+1. Set routing rules: In Kamailio, you can use the "route" module to define the routing rules for incoming SIP traffic. You can specify the routing rules based on the domain, username, and IP address of the incoming requests. Example:
+
+```scss
+route{
+   if (is_from_local()) {
+      # route to PBX
+      forward(“x.x.x.x”, 5060);
+   }
+   else {
+      # route to carrier
+      forward(“y.y.y.y”, 5060);
+   }
+}
+```
+
+Note: These are just examples, you may need to adjust the configuration based on your specific requirements and network setup.
+
+### On both Kamailio SBCs, configure the routing rules to forward the incoming calls to the respective PBX systems based on the dialed number or SIP URI.
+
+1. Edit the kamailio configuration file:
+
+```scss
+sudo nano /etc/kamailio/kamailio.cfg
+```
+
+1. Add the following routing rules:
+
+```scss
+route {
+   if (is_method("INVITE")) {
+      if (uri == "sip:PBX1@domain.com") {
+         forward(PBX1_IP, PBX1_PORT);
+         exit;
+      } 
+      if (uri == "sip:PBX2@domain.com") {
+         forward(PBX2_IP, PBX2_PORT);
+         exit;
+      }
+   }
+}
+```
+
+Replace PBX1_IP and PBX1_PORT with the actual IP address and port of the first PBX, and replace PBX2_IP and PBX2_PORT with the actual IP address and port of the second PBX.
+
+1. Save the changes and exit the editor.
+2. Restart Kamailio for the changes to take effect:
+
+```scss
+sudo systemctl restart kamailio
+```
+
+Now, when an incoming call is received, Kamailio will inspect the SIP URI and forward the call to the appropriate PBX based on the routing rules you have specified.
+
+### On both PBX systems, configure the outbound dialing rules to use the SIP Trunk for making calls.
+
+1. Log in to the Asterisk PBX systems using the CLI or the web interface.
+2. Navigate to the dialplan configuration file, usually located at /etc/asterisk/extensions.conf or similar.
+3. Add a new context for the outbound dialing rules, for example, [outbound-dialing].
+4. In this context, add the dialing rules based on your requirements, such as:
+
+```scss
+exten => _X.,1,Dial(SIP/${EXTEN}@siptrunk)
+```
+
+1. Replace `siptrunk` with the name of your SIP trunk.
+2. Save the changes and restart the Asterisk PBX systems for the changes to take effect.
+3. Test the outbound dialing by making a call to an external number and verify if the call is being made through the SIP trunk.
+
+
+
+### Test the call flow by placing calls between the PBX systems and verifying that the calls are successfully processed by the Kamailio SBCs and routed to the destination PBX
+
+1. Place a call from one PBX system to the other.
+2. Verify that the call is processed by one of the Kamailio SBCs.
+3. Check the routing rules to ensure that the call is forwarded to the correct PBX system based on the dialed number or SIP URI.
+4. Confirm that the call is successful and that both PBX systems can make and receive calls.
+5. Repeat the test for different call scenarios to verify that the Kamailio SBCs are properly processing the incoming and outgoing calls and routing them to the correct destination.
+6. Monitor the logs on both Kamailio SBCs and PBX systems to check for any errors or issues during the call flow.
+7. Verify that the load balancer is distributing the incoming SIP traffic evenly across the Kamailio SBCs.
+
+
+
+
+
+
+
+
+
+
+
+
+
