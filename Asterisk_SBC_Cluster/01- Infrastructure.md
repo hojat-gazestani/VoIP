@@ -13,7 +13,7 @@
 
 
 
-	
+​	
 
 # VOIP traffic load balancer(PBX load balancing):
 ```text
@@ -35,7 +35,7 @@ The SBC acts as a gateway, directing incoming calls to one of the available PBXs
 
 # open source SBC:
 
-		
+​		
 
 ```text
 Kamailio: 	high-performance, rich set of features
@@ -107,13 +107,13 @@ LiberSBC:  	designed for use with Asterisk, pre-configured templates, ease of us
 
 ```bash
 sudo apt-get update
-sudo apt-get install asterisk asterisk-dahdi asterisk-core-sounds-en-gsm asterisk-core-sounds-en-wav asterisk-moh-opsound-wav asterisk-dev asterisk-doc
+sudo apt-get install asterisk -y
 ```
 
 1. Create a configuration file for both servers. Here, we’ll call it `ha.conf`. Put the following contents in the file:
 
-```
-makefileCopy code[general]
+```bash
+[general]
 Failover=Primary
 Heartbeat=10.0.0.1
 [Primary]
